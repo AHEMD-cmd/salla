@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Controllers\Front\FrontController;
 
@@ -30,6 +31,9 @@ class Order extends Model
         parent::boot();
 
         static::creating(function ($order) {
+            
+            $order->creator_id = Auth::user()->id;
+            
             if (empty($order->serial_number)) {
                 $order->serial_number = random_int(10000, 99999);
             }

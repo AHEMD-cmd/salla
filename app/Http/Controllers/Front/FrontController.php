@@ -213,12 +213,12 @@ class FrontController extends Controller
         }
 
         // Fetch settings from the database
-        $pdfColor = Setting::where('key', 'pdf_color')->first()->value ?? 'rgb(255, 0, 0)';
-        $pdfOpacity = Setting::where('key', 'pdf_opacity')->first()->value ?? 0.2;
-        $fontSize = Setting::where('key', 'pdf_font_size')->first()->value ?? 36;
-        $fontStyle = Setting::where('key', 'pdf_font_style')->first()->value ?? 'B';
-        $watermarkX = Setting::where('key', 'pdf_watermark_x')->first()->value ?? 30;
-        $watermarkY = Setting::where('key', 'pdf_watermark_y')->first()->value ?? 140;
+        $pdfColor = Setting::where('key', 'pdf_color')->where('creator_id', auth()->id())->first()->value ?? 'rgb(255, 0, 0)';
+        $pdfOpacity = Setting::where('key', 'pdf_opacity')->where('creator_id', auth()->id())->first()->value ?? 0.2;
+        $fontSize = Setting::where('key', 'pdf_font_size')->where('creator_id', auth()->id())->first()->value ?? 36;
+        $fontStyle = Setting::where('key', 'pdf_font_style')->where('creator_id', auth()->id())->first()->value ?? 'B';
+        $watermarkX = Setting::where('key', 'pdf_watermark_x')->where('creator_id', auth()->id())->first()->value ?? 30;
+        $watermarkY = Setting::where('key', 'pdf_watermark_y')->where('creator_id', auth()->id())->first()->value ?? 140;
         $rotationAngle = Setting::where('key', 'pdf_rotation_angle')->first()->value ?? 45;
 
         $fontSize = (float) $fontSize;
@@ -352,13 +352,13 @@ class FrontController extends Controller
         }
 
         // Fetch settings from the database
-        $pdfColor = Setting::where('key', 'pdf_color')->first()->value ?? 'rgb(255, 0, 0)';
-        $pdfOpacity = Setting::where('key', 'pdf_opacity')->first()->value ?? 0.2;
-        $fontSize = Setting::where('key', 'pdf_font_size')->first()->value ?? 36;
-        $fontStyle = Setting::where('key', 'pdf_font_style')->first()->value ?? 'B';
-        $watermarkX = Setting::where('key', 'pdf_watermark_x')->first()->value ?? 30;
-        $watermarkY = Setting::where('key', 'pdf_watermark_y')->first()->value ?? 140;
-        $rotationAngle = Setting::where('key', 'pdf_rotation_angle')->first()->value ?? 45;
+        $pdfColor = Setting::where('key', 'pdf_color')->where('creator_id', auth()->id())->first()->value ?? 'rgb(255, 0, 0)';
+        $pdfOpacity = Setting::where('key', 'pdf_opacity')->where('creator_id', auth()->id())->first()->value ?? 0.2;
+        $fontSize = Setting::where('key', 'pdf_font_size')->where('creator_id', auth()->id())->first()->value ?? 36;
+        $fontStyle = Setting::where('key', 'pdf_font_style')->where('creator_id', auth()->id())->first()->value ?? 'B';
+        $watermarkX = Setting::where('key', 'pdf_watermark_x')->where('creator_id', auth()->id())->first()->value ?? 30;
+        $watermarkY = Setting::where('key', 'pdf_watermark_y')->where('creator_id', auth()->id())->first()->value ?? 140;
+        $rotationAngle = Setting::where('key', 'pdf_rotation_angle')->where('creator_id', auth()->id())->first()->value ?? 45;
 
         $fontSize = (float) $fontSize;
         $watermarkX = (int) $watermarkX;

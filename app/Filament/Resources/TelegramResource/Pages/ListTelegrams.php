@@ -2,11 +2,12 @@
 
 namespace App\Filament\Resources\TelegramResource\Pages;
 
-use App\Filament\Resources\TelegramResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
-use Filament\Notifications\Notification;
+use App\Models\TelegramSetting;
 use Illuminate\Support\Facades\Http;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\ListRecords;
+use App\Filament\Resources\TelegramResource;
 
 
 class ListTelegrams extends ListRecords
@@ -22,6 +23,9 @@ class ListTelegrams extends ListRecords
 
             Actions\Action::make('setWebhook')
             ->label(' ربط البوت بـالموقع')
+            ->visible(function () {
+                return TelegramSetting::where('creator_id', auth()->user()->id)->count() == 1 && auth()->user()->can('ربط ب تيليغرام_telegram');
+            })
             ->action(function () {
 
                 $response = Http::get(route('telegram.setWebhook'));

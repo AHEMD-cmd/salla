@@ -216,7 +216,7 @@ Route::get('updates', function () {
 
 Route::post('/webhook', function () {
 
-    $settings = TelegramSetting::first();
+    $settings = TelegramSetting::where('creator_id', auth()->user()->id)->first();
 
     if (!$settings) {
         return 'Telegram settings not found!';
@@ -238,7 +238,7 @@ Route::post('/webhook', function () {
 
 Route::get('/set-telegram-webhook', function () {
 
-    $telegramSetting = TelegramSetting::first();
+    $telegramSetting = TelegramSetting::where('creator_id', auth()->user()->id)->first();
 
     if (!$telegramSetting) {
         return response('Telegram settings not found!', 404);

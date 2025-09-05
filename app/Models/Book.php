@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +25,12 @@ class Book extends Model
                     Storage::disk('public')->delete($oldPath);
                 }
             }
+        });
+
+        static::creating(function ($book) {
+            
+            $book->creator_id = Auth::user()->id;
+            
         });
     }
     

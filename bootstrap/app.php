@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\RedirectIfValid;
-use App\Http\Middleware\CheckAllowedDomain;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -15,7 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
 
         // add check allowed domain middleware
-        $middleware->append(CheckAllowedDomain::class);
 
         $middleware->validateCsrfTokens(except: [
          '*'

@@ -14,8 +14,9 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\TelegramResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TelegramResource\RelationManagers;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
-class TelegramResource extends Resource
+class TelegramResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = TelegramSetting::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -37,19 +38,19 @@ class TelegramResource extends Resource
 
 
 
-    public static function canViewAny(): bool
-    {
-        $user = User::where('email', 'admin@admin.com')->first();
-        if ($user) {
-            return false;
-        }
-        
-        return auth()->user()->type == 'admin';
-    }
+    // public static function canViewAny(): bool
+    // {
+    //     $user = User::where('email', 'admin@admin.com')->first();
+    //     if ($user) {
+    //         return false;
+    //     }
+
+    //     return auth()->user()->type == 'super-admin' || auth()->user()->type == 'admin';
+    // }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->type == 'admin' && TelegramSetting::count() === 0;
+        return (TelegramSetting::where('creator_id', auth()->user()->parent_id)->count() == 0 || TelegramSetting::where('creator_id', auth()->id())->count() == 0) && auth()->user()->hasPermissionTo('ربط ب تيليغرام_telegram') ;
     }
 
     public static function form(Form $form): Form
@@ -77,6 +78,12 @@ class TelegramResource extends Resource
                     ->label(__('webhook_token'))
                     ->helperText(__('Set the webhook token for Telegram bot')),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('creator_id', auth()->id());
     }
 
     public static function table(Table $table): Table
@@ -121,7 +128,7 @@ class TelegramResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->label(__('edit')),
-                    Tables\Actions\DeleteAction::make()
+                Tables\Actions\DeleteAction::make()
                     ->label(__('delete')),
 
 
@@ -142,6 +149,19 @@ class TelegramResource extends Resource
             'index' => Pages\ListTelegrams::route('/'),
             // 'create' => Pages\CreateTelegram::route('/create'),
             // 'edit' => Pages\EditTelegram::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            // 'delete_any',
+            'connect_with_telegram' => 'ربط ب تيليغرام',
         ];
     }
 }

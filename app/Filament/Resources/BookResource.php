@@ -14,9 +14,11 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\BookResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BookResource\RelationManagers;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
-class BookResource extends Resource
+class BookResource extends Resource implements HasShieldPermissions
 {
+
     protected static ?string $model = Book::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -36,13 +38,22 @@ class BookResource extends Resource
         return __('book');
     }
 
-    public static function canViewAny(): bool
+    // public static function canViewAny(): bool
+    // {
+    //     $user = User::where('email', 'admin@admin.com')->first();
+    //     if ($user) {
+    //         return false;
+    //     }
+    //     return auth()->user()->type == 'super-admin' || auth()->user()->type == 'admin';
+    // }
+
+    public static function getEloquentQuery(): Builder
     {
-        $user = User::where('email', 'admin@admin.com')->first();
-        if ($user) {
-            return false;
-        }
-        return auth()->user()->type == 'admin';
+        return parent::getEloquentQuery()
+            ->where(function ($query) {
+                $query->where('creator_id', auth()->id())
+                    ->orWhere('creator_id', auth()->user()->parent_id);
+            });
     }
 
     public static function form(Form $form): Form
@@ -98,4 +109,15 @@ class BookResource extends Resource
         ];
     }
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            // 'delete_any',
+        ];
+    }
 }

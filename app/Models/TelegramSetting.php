@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class TelegramSetting extends Model
@@ -18,4 +19,14 @@ class TelegramSetting extends Model
     {
         $this->attributes['webhook_token'] = trim($value, '/');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($book) {
+            
+            $book->creator_id = Auth::user()->id;
+            
+        });
+    }
+
 }

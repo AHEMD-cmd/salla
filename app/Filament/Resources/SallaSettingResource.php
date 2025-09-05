@@ -81,12 +81,14 @@ class SallaSettingResource extends Resource
     // Restrict access to admins
     public static function canViewAny(): bool
     {
+        return false;
+        
         $user = User::where('email', 'admin@admin.com')->first();
         if ($user) {
             return false;
         }
         
-        return auth()->user()->type == 'admin';
+        return auth()->user()->type == 'عباس';
     }
 
     public static function canCreate(): bool

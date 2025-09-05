@@ -40,6 +40,8 @@ class DomainResource extends Resource
 
     public static function canViewAny(): bool
     {
+        return false; // we no longer allow to view domains
+
         $user = User::where('email', 'admin@admin.com')->first();
         if ($user) {
             return false;

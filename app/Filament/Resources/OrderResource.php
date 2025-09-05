@@ -20,8 +20,9 @@ use Filament\Tables\Columns\TextInputColumn;
 use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
-class OrderResource extends Resource
+class OrderResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Order::class;
 
@@ -41,18 +42,35 @@ class OrderResource extends Resource
     {
         return __('order');
     }
-    public static function canCreate(): bool
-    {
-        return true; // This will disable the "Create" button
-    }
+    // public static function canCreate(): bool
+    // {
+    //     if (auth()->user()->HasRole('super_admin')) {
+    //         return true;
+    //     }
 
-    public static function canViewAny(): bool
+    //     if (auth()->user()->subscription?->remaining_days > 0 || auth()->user()->subscription?->auto_renewal) {
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
+
+    // public static function canViewAny(): bool
+    // {
+    //     $user = User::where('email', 'admin@admin.com')->first();
+    //     if ($user) {
+    //         return false;
+    //     }
+    //     return auth()->user()->type == 'super-admin' || auth()->user()->type == 'admin';
+    // }
+
+    public static function getEloquentQuery(): Builder
     {
-        $user = User::where('email', 'admin@admin.com')->first();
-        if ($user) {
-            return false;
-        }
-        return auth()->user()->type == 'admin' || auth()->user()->type == 'user';
+        return parent::getEloquentQuery()
+            ->where(function ($query) {
+                $query->where('creator_id', auth()->id())
+                    ->orWhere('creator_id', auth()->user()->parent_id);
+            });
     }
 
     public static function form(Form $form): Form
@@ -68,22 +86,25 @@ class OrderResource extends Resource
                     ])
                     ->disabled()
                     ->helperText('يتم انشاؤه تلقائيا'),
-                    // ->helperText('يُسمح بالأحرف الإنجليزية والأرقام والشرطات والمسافات فقط')
+                // ->helperText('يُسمح بالأحرف الإنجليزية والأرقام والشرطات والمسافات فقط')
 
                 // TextInput::make('status')
                 //     ->label('الحالة')
                 //     ->disabled()
                 //     ->default('تم التنفيذ')
                 //     ->required(),
-                Select::make('user_id') 
-                    ->relationship('user', 'name')
+                Select::make('user_id')
+                    ->relationship('user', 'name', fn($query) => $query->where(function ($query) {
+                        $query->where('creator_id', auth()->id())
+                            ->orWhere('creator_id', auth()->user()->parent_id);
+                    }))
                     ->searchable()
                     ->label(__('user'))
                     ->required(),
                 Select::make('pdf_path')
                     ->label(__('path'))
                     ->options(
-                        Book::all()->pluck('name', 'path')
+                        Book::where('creator_id', auth()->id())->get()->pluck('name', 'path')
                     )
                     ->required(),
             ]);
@@ -116,9 +137,9 @@ class OrderResource extends Resource
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->label(__('created_at')),
-                ToggleColumn::make('telegram_delivery_status')
+                // ToggleColumn::make('telegram_delivery_status')
 
-                    ->label('حاله الوصول الي تلجرام'),
+                //     ->label('حاله الوصول الي تلجرام'),
 
                 // TextInputColumn::make(Storage::url('pdf_path'))
             ])
@@ -130,6 +151,7 @@ class OrderResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('download')
                     ->label('انشاء PDF')
+                    ->visible(fn($record) => auth()->user()->can('إنشاء PDF_order'))
                     ->url(
                         fn(Order $record): string => route('create_pdf', $record->id),
                         shouldOpenInNewTab: true
@@ -142,6 +164,7 @@ class OrderResource extends Resource
                 //     ->url(fn(Order $record) => route('preview_pdf', $record), true),
                 Tables\Actions\Action::make('preview')
                     ->label('تحميل PDF')
+                    ->visible(fn($record) => auth()->user()->can('تحميل الكتاب_order'))
                     ->color('primary')
                     ->url(fn(Order $record) => route('send_pdf', $record), true),
             ])
@@ -165,6 +188,20 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             // 'create' => Pages\CreateOrder::route('/create'),
             // 'edit' => Pages\EditOrder::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            // 'delete_any',
+            'download_book_order' => 'تحميل الكتاب',
+            'create_pdf_order' => 'إنشاء PDF',
         ];
     }
 }
